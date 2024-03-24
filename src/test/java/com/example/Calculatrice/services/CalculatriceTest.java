@@ -11,7 +11,7 @@ public class CalculatriceTest {
 	    Calculatrice calculatrice = new Calculatrice();
 	    int a = 5;
 	    int b = 10;
-	    int expectedResult = 16;
+	    int expectedResult = 15;
 	    int result;
 	
 	    //When
