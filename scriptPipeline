@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+    tools {
+        maven '3.9.4'
+    }
+    environment {
+                    JAVA_HOME= 'C:/Program Files/Java/jdk-17'
+                }
+    stages {
+        stage('Checkout') {
+            steps {
+                // Vérifier le code depuis le dépôt Gitea
+                //credentials
+                git branch:'master', credentialsId:'gitea_credential', url:'http://localhost:3000/falltahir/projectCalculatrice.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                // Exécuter les étapes de construction, par exemple avec Maven
+                bat 'mvn clean package'
+            }
+        }
+        stage('Run Unit Tests') {
+            steps {
+                // Exécuter les tests unitaires, par exemple avec Maven
+                bat 'mvn test'
+                
+                // Collecter les résultats des tests et les publier dans Jenkins
+                junit 'target/surefire-reports/*.xml'
+            }
+        }
+        stage('SonarQube analysis') {
+            steps {
+                bat "mvn clean verify sonar:sonar -Dsonar.projectKey=projectCalculatrice -Dsonar.projectName='projectCalculatrice' -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_ea6d6bedaef31758702818b5924ba5e1c3e641e5"
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Toujours nettoyer après le build, par exemple en supprimant les fichiers temporaires
+            cleanWs()
+        }
+        success {
+            // Actions à prendre en cas de succès du build
+            echo 'Build succeeded! All tests passed.'
+        }
+        failure {
+            // Actions à prendre en cas d'échec du build
+            echo 'Build failed! Tests may have failed.'
+        }
+    }
+}
